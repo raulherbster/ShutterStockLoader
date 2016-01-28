@@ -1,6 +1,7 @@
 package com.example.herbster.shutterstockloader;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
@@ -24,7 +26,6 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
     }
 
     @Override
@@ -57,7 +58,19 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
 
     @Override
     public boolean onQueryTextSubmit(String query) {
+        if (!isNetworkAvailable()) {
+            popupNetworkErrorMessage();
+            return false;
+        }
         return false;
+    }
+
+    private void popupNetworkErrorMessage() {
+        new AlertDialog.Builder(getApplicationContext())
+                .setTitle("Connection Error")
+                .setMessage("Your phone is not connected to the Internet. We cannot search for images.")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
     }
 
     @Override
