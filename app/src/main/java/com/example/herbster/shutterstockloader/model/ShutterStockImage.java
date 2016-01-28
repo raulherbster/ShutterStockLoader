@@ -34,6 +34,31 @@ public class ShutterStockImage implements ShutterStockMedia, Comparable {
         mKeywords = new TreeSet<String>();
     }
 
+
+    public ShutterStockContributor getContributor() {
+        return mContributor;
+    }
+
+    public double getAspect() {
+        return mAspect;
+    }
+
+    public String getDescription() {
+        return mDescription;
+    }
+
+    public boolean isAdultImage() {
+        return mIsAdult;
+    }
+
+    public boolean isIllustrationImage() {
+        return mIsIllustration;
+    }
+
+    public Set<String> getKeywords() {
+        return mKeywords;
+    }
+
     @Override
     public MediaType getMediaType() {
         return MediaType.IMAGE;
@@ -42,6 +67,10 @@ public class ShutterStockImage implements ShutterStockMedia, Comparable {
 
     public void setId(String id) {
         this.mId = id;
+    }
+
+    public String getId() {
+        return mId;
     }
 
     public void setAddedDate(Date addedDate) {

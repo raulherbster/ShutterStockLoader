@@ -20,7 +20,11 @@ public class ShutterStockQueryResponse {
     }
 
     public boolean merge(ShutterStockQueryResponse newQueryResponse) {
-        return false;
+        if (newQueryResponse.mId.equals(this.mId)) {
+            return this.mImagesSet.addAll(newQueryResponse.getImages());
+        } else {
+            return false;
+        }
     }
 
     public String getId() {
@@ -60,5 +64,9 @@ public class ShutterStockQueryResponse {
 
     public void addImages(List<ShutterStockImage> images) {
         mImagesSet.addAll(images);
+    }
+
+    public Set<ShutterStockImage> getImages() {
+        return mImagesSet;
     }
 }

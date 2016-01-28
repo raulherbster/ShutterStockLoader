@@ -81,7 +81,7 @@ public class ShutterStockJSONParser {
                 } else if (name.equals(TAG_PER_PAGE)) {
                     jsonReader.nextInt();
                 } else if (name.equals(TAG_TOTAL_COUNT)) {
-                    jsonReader.nextInt();
+                    response.setNumElements(jsonReader.nextInt());
                 } else if (name.equals(TAG_SEARCH_ID)) {
                     response.setId(jsonReader.nextString());
                 } else if (name.equals(TAG_DATA)) {
