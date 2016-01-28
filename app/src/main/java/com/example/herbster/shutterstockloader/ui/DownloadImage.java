@@ -20,7 +20,7 @@ public class DownloadImage extends AsyncTask<ServiceRequest,Void,String> {
     @Override
     protected String doInBackground(ServiceRequest... params) {
         if (params == null || params.length == 0)
-            return "";
+            return null;
 
         RESTService restService = RESTService.create(mURL);
         if (restService != null) {
