@@ -7,8 +7,10 @@ import com.example.herbster.shutterstockloader.model.ShutterStockCategory;
 import com.example.herbster.shutterstockloader.model.ShutterStockContributor;
 import com.example.herbster.shutterstockloader.model.ShutterStockImage;
 import com.example.herbster.shutterstockloader.model.ShutterStockImageAsset;
+import com.example.herbster.shutterstockloader.model.ShutterStockImageModel;
 import com.example.herbster.shutterstockloader.model.ShutterStockQueryResponse;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -51,6 +53,10 @@ public class ShutterStockJSONParser {
     public static final String TAG_IS_LICENSABLE = "is_licensable";
     public static final String TAG_WIDTH = "width";
     public static final String TAG_URL = "url";
+    public static final String TAG_HAS_MODEL_RELEASE = "has_model_release";
+    public static final String TAG_HAS_PROPERTY_RELEASE = "has_property_release";
+    public static final String TAG_MODELS = "models";
+    public static final String TAG_IS_EDITORIAL = "is_editorial";
 
     private static ShutterStockJSONParser singleton = null;
 
@@ -91,10 +97,25 @@ public class ShutterStockJSONParser {
             }
             jsonReader.endObject();
         } catch (IOException e) {
-            Log.e(TAG, "Error while reading input stream");
+            Log.e(TAG, "Error while reading input stream : " + convertStreamToString(in));
             return null;
         }
         return response;
+    }
+
+    private String convertStreamToString(InputStream in) {
+        BufferedReader r = new BufferedReader(new InputStreamReader(in));
+        StringBuilder total = new StringBuilder();
+        String line;
+        try {
+            while ((line = r.readLine()) != null) {
+                total.append(line);
+            }
+        } catch (IOException e) {
+            Log.e(TAG,"Cannot retrieve the content of the input stream.");
+            return "";
+        }
+        return total.toString();
     }
 
     private List<ShutterStockImage> parseShutterStockImages(JsonReader jsonReader) throws IOException {
@@ -134,17 +155,53 @@ public class ShutterStockJSONParser {
                 image.setImageType(jsonReader.nextString());
             } else if (name.equals(TAG_IS_ADULT)) {
                 image.setIsAdult(jsonReader.nextBoolean());
+            } else if (name.equals(TAG_HAS_MODEL_RELEASE)) {
+                image.setHasModelRelease(jsonReader.nextBoolean());
+            } else if (name.equals(TAG_HAS_PROPERTY_RELEASE)) {
+                image.setHasPropertyRelease(jsonReader.nextBoolean());
             } else if (name.equals(TAG_IS_ILLUSTRATION)) {
                 image.setIsIllustration(jsonReader.nextBoolean());
+            } else if (name.equals(TAG_IS_EDITORIAL)) {
+                image.setIsEditorial(jsonReader.nextBoolean());
             } else if (name.equals(TAG_KEYWORDS)) {
                 List<String> keywords = parseShutterStockImageKeywords(jsonReader);
                 image.setKeywords(keywords);
             } else if (name.equals(TAG_MEDIA_TYPE)) {
                 jsonReader.nextString();
+            } else if (name.equals(TAG_MODELS)) {
+                List<ShutterStockImageModel> models = parseShutterStockImageModels(jsonReader);
+                image.setModels(models);
             }
         }
         jsonReader.endObject();
         return image;
+    }
+
+    private List<ShutterStockImageModel> parseShutterStockImageModels(JsonReader jsonReader) throws IOException {
+        List<ShutterStockImageModel> models = new ArrayList<ShutterStockImageModel>();
+
+        jsonReader.beginArray();
+        while (jsonReader.hasNext()) {
+            models.add(parseShutterStockSingleModel(jsonReader));
+        }
+        jsonReader.endArray();
+
+        return models;
+    }
+
+    private ShutterStockImageModel parseShutterStockSingleModel(JsonReader jsonReader) throws IOException {
+        ShutterStockImageModel model = new ShutterStockImageModel();
+
+        jsonReader.beginObject();
+        while (jsonReader.hasNext()) {
+            String name = jsonReader.nextName();
+            if (name.equals(TAG_ID)) {
+                model.setId(jsonReader.nextString());
+            }
+        }
+        jsonReader.endObject();
+
+        return model;
     }
 
     private List<ShutterStockCategory> parseShutterStockImageCategories(JsonReader jsonReader) throws IOException {

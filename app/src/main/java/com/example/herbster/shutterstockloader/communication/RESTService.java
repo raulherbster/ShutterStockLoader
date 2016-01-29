@@ -1,5 +1,6 @@
 package com.example.herbster.shutterstockloader.communication;
 
+import android.net.Uri;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -26,25 +27,20 @@ public class RESTService {
     public static final int READ_TIMETOUT = 30000;
     public static final int CONNECT_TIMETOUT = 30000;
 
-    private URL mURL;
+    private String mScheme;
+    private String mAuthority;
+    private String[] mPaths;
 
-    private RESTService(URL url) {
-        mURL = url;
+    private RESTService(String scheme, String authority, String[] paths) {
+        mScheme = scheme;
+        mAuthority = authority;
+        mPaths = paths;
     }
 
     /**
-     * Create an instance of this object from a URL
-     * @param url the URL as string to create a REST service from
-     * @return the REST service instance from a given URL
      */
-    public static RESTService create(String url) {
-        try {
-            URL aURL = new URL(url);
-            return new RESTService(aURL);
-        } catch (MalformedURLException e) {
-            Log.e(TAG, "Wrong URL format");
-            return null;
-        }
+    public static RESTService create(String scheme, String authority, String[] paths) {
+        return new RESTService(scheme,authority,paths);
     }
 
     /**
@@ -83,14 +79,27 @@ public class RESTService {
     public ServiceResponse doGet(ServiceRequest request) {
         ServiceResponse response = new ServiceResponse();
         try {
-            HttpURLConnection conn = (HttpURLConnection) mURL.openConnection();
+            Uri.Builder builder = new Uri.Builder();
+            builder.scheme(mScheme)
+                    .authority(mAuthority);
+            for (String path : mPaths) {
+                builder.appendPath(path);
+            }
+
+            Set<Map.Entry<String,String>> parameters = request.getParameters().entrySet();
+            for (Map.Entry<String,String> entry : parameters) {
+                builder.appendQueryParameter(entry.getKey(), entry.getValue());
+            }
+            URL url = new URL(builder.build().toString());
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setReadTimeout(READ_TIMETOUT);
             conn.setConnectTimeout(CONNECT_TIMETOUT);
             conn.setRequestMethod(GET_REQUEST);
 
-            Set<Map.Entry<String,String>> entries = request.getProperties().entrySet();
-            for (Map.Entry<String,String> entry : entries) {
-                conn.setRequestProperty(entry.getKey(),entry.getValue());
+            Set<Map.Entry<String,String>> properties = request.getProperties().entrySet();
+            for (Map.Entry<String,String> entry : properties) {
+                conn.setRequestProperty(entry.getKey(), entry.getValue());
             }
 
             conn.connect();
@@ -101,7 +110,7 @@ public class RESTService {
 
             return response;
         } catch (IOException e) {
-            Log.e(TAG,"Fail on connection : " + e.getLocalizedMessage());
+            Log.e(TAG, " Fail on connection : (" + response.getResponseCode() + ")" + e.getLocalizedMessage());
             return null;
         }
     }

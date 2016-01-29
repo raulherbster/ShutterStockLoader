@@ -1,8 +1,9 @@
 package com.example.herbster.shutterstockloader.model;
 
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -18,8 +19,9 @@ public class ShutterStockImage implements ShutterStockMedia, Comparable {
     private String mId;
     private Date mAddedDate;
     private double mAspect;
-    private Set<ShutterStockImageAsset> mAssetsList;
+    private Map<String,ShutterStockImageAsset> mAssetsMap;
     private Set<ShutterStockCategory> mCategories;
+    private Set<ShutterStockImageModel> mModels;
     private ShutterStockContributor mContributor;
     private String mDescription;
     private ImageType mImageType;
@@ -27,13 +29,28 @@ public class ShutterStockImage implements ShutterStockMedia, Comparable {
     private boolean mIsAdult;
     private boolean mIsIllustration;
     private Set<String> mKeywords;
+    private boolean mHasModelRelease;
+    private boolean mHasPropertyRelease;
+    private boolean mIsEditorial;
 
     public ShutterStockImage() {
-        mAssetsList = new TreeSet<ShutterStockImageAsset>();
+        mAssetsMap = new HashMap<String,ShutterStockImageAsset>();
         mCategories = new TreeSet<ShutterStockCategory>();
         mKeywords = new TreeSet<String>();
+        mModels = new TreeSet<ShutterStockImageModel>();
     }
 
+    public void setHasModelRelease(boolean hasModelRelease) {
+        this.mHasModelRelease = hasModelRelease;
+    }
+
+    public void setHasPropertyRelease(boolean hasPropertyRelease) {
+        this.mHasPropertyRelease = hasPropertyRelease;
+    }
+
+    public void setModels(List<ShutterStockImageModel> models) {
+        this.mModels.addAll(models);
+    }
 
     public ShutterStockContributor getContributor() {
         return mContributor;
@@ -110,11 +127,25 @@ public class ShutterStockImage implements ShutterStockMedia, Comparable {
     }
 
     public void addAssets(List<ShutterStockImageAsset> shutterStockImageAssets) {
-        mAssetsList.addAll(shutterStockImageAssets);
+        for (ShutterStockImageAsset asset : shutterStockImageAssets)
+            mAssetsMap.put(asset.getName(),asset);
     }
 
     public void addCategories(List<ShutterStockCategory> shutterStockCategories) {
         mCategories.addAll(shutterStockCategories);
+    }
+
+    public ShutterStockImageAsset getAsset(String name) {
+        return mAssetsMap.get(name);
+    }
+
+
+    public void setIsEditorial(boolean isEditorial) {
+        this.mIsEditorial = isEditorial;
+    }
+
+    public boolean isEditorial() {
+        return mIsEditorial;
     }
 
     @Override

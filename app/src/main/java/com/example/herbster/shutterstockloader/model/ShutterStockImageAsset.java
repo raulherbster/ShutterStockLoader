@@ -14,6 +14,7 @@ public class ShutterStockImageAsset implements Comparable {
     private boolean mIsLicensable;
     private int mWidth;
     private String mURL;
+    private Object height;
 
     public ShutterStockImageAsset(String name) {
         this.mName = name;
@@ -51,9 +52,26 @@ public class ShutterStockImageAsset implements Comparable {
         this.mURL = URL;
     }
 
+    public String getURL() {
+        return mURL;
+    }
+
     @Override
     public int compareTo(Object another) {
         ShutterStockImageAsset anotherAsset = (ShutterStockImageAsset)another;
         return this.mName.compareTo(anotherAsset.mName);
     }
+
+    public String getName() {
+        return mName;
+    }
+
+    public int getWidth() {
+        return mWidth;
+    }
+
+    public int getHeight() {
+        return mHeight;
+    }
+
 }

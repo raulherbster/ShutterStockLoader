@@ -22,9 +22,22 @@ public class ApplicationTest extends InstrumentationTestCase {
 
     private final String TEST_FILE_NAME_FIRST = "image_query_first.json";
     private final String TEST_FILE_NAME_SECOND = "image_query_second.json";
+    private final String TEST_FILE_NAME_ERROR = "image_query_error.json";
 
     public ApplicationTest() {
 
+    }
+
+    public void testShutterStockJSONParser_Error() {
+        ShutterStockJSONParser parser = ShutterStockJSONParser.getInstance();
+        ShutterStockQueryResponse queryResponse = null;
+        try {
+            queryResponse = parser.parseShutterStockJSONResponse(getInstrumentation().getContext().getAssets().open(TEST_FILE_NAME_ERROR));
+        } catch (IOException e) {
+            fail("Should not  here");
+        }
+
+        assertNotNull(queryResponse);
     }
 
     public void testShutterStockJSONParser_QueryResponse() {
