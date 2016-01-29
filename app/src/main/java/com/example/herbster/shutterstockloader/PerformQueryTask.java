@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Created by herbster on 1/28/2016.
  */
-public class PerformQueryTask extends AsyncTask<String,Void,ShutterStockQueryResponse> {
+public class PerformQueryTask extends AsyncTask<String, Void, ShutterStockQueryResponse> {
 
     public static final String PARAM_PAGE = "page";
     public static final String PARAM_PER_PAGE = "per_page";
@@ -51,7 +51,7 @@ public class PerformQueryTask extends AsyncTask<String,Void,ShutterStockQueryRes
         String authority = properties.getShutterStockQueryAuthority();
         String paths[] = properties.getShutterStockQueryPaths();
 
-        RESTService service = RESTService.create(scheme,authority,paths);
+        RESTService service = RESTService.create(scheme, authority, paths);
         if (service != null) {
             ServiceRequest request = new ServiceRequest();
             request.setAuthBasic(properties.getEncodedCredentials());

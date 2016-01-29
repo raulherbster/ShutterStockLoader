@@ -12,14 +12,10 @@ import java.util.TreeSet;
  */
 public class ShutterStockImage implements ShutterStockMedia, Comparable {
 
-    public enum ImageType {
-        PHOTO, VECTOR
-    }
-
     private String mId;
     private Date mAddedDate;
     private double mAspect;
-    private Map<String,ShutterStockImageAsset> mAssetsMap;
+    private Map<String, ShutterStockImageAsset> mAssetsMap;
     private Set<ShutterStockCategory> mCategories;
     private Set<ShutterStockImageModel> mModels;
     private ShutterStockContributor mContributor;
@@ -34,7 +30,7 @@ public class ShutterStockImage implements ShutterStockMedia, Comparable {
     private boolean mIsEditorial;
 
     public ShutterStockImage() {
-        mAssetsMap = new HashMap<String,ShutterStockImageAsset>();
+        mAssetsMap = new HashMap<String, ShutterStockImageAsset>();
         mCategories = new TreeSet<ShutterStockCategory>();
         mKeywords = new TreeSet<String>();
         mModels = new TreeSet<ShutterStockImageModel>();
@@ -56,12 +52,24 @@ public class ShutterStockImage implements ShutterStockMedia, Comparable {
         return mContributor;
     }
 
+    public void setContributor(ShutterStockContributor contributor) {
+        this.mContributor = contributor;
+    }
+
     public double getAspect() {
         return mAspect;
     }
 
+    public void setAspect(double aspect) {
+        this.mAspect = aspect;
+    }
+
     public String getDescription() {
         return mDescription;
+    }
+
+    public void setDescription(String description) {
+        this.mDescription = description;
     }
 
     public boolean isAdultImage() {
@@ -76,34 +84,25 @@ public class ShutterStockImage implements ShutterStockMedia, Comparable {
         return mKeywords;
     }
 
+    public void setKeywords(List<String> keywords) {
+        this.mKeywords.addAll(keywords);
+    }
+
     @Override
     public MediaType getMediaType() {
         return MediaType.IMAGE;
-    }
-
-
-    public void setId(String id) {
-        this.mId = id;
     }
 
     public String getId() {
         return mId;
     }
 
+    public void setId(String id) {
+        this.mId = id;
+    }
+
     public void setAddedDate(Date addedDate) {
         this.mAddedDate = addedDate;
-    }
-
-    public void setAspect(double aspect) {
-        this.mAspect = aspect;
-    }
-
-    public void setContributor(ShutterStockContributor contributor) {
-        this.mContributor = contributor;
-    }
-
-    public void setDescription(String description) {
-        this.mDescription = description;
     }
 
     public void setImageType(String imageType) {
@@ -122,13 +121,9 @@ public class ShutterStockImage implements ShutterStockMedia, Comparable {
         this.mIsIllustration = isIllustration;
     }
 
-    public void setKeywords(List<String> keywords) {
-        this.mKeywords.addAll(keywords);
-    }
-
     public void addAssets(List<ShutterStockImageAsset> shutterStockImageAssets) {
         for (ShutterStockImageAsset asset : shutterStockImageAssets)
-            mAssetsMap.put(asset.getName(),asset);
+            mAssetsMap.put(asset.getName(), asset);
     }
 
     public void addCategories(List<ShutterStockCategory> shutterStockCategories) {
@@ -138,7 +133,6 @@ public class ShutterStockImage implements ShutterStockMedia, Comparable {
     public ShutterStockImageAsset getAsset(String name) {
         return mAssetsMap.get(name);
     }
-
 
     public void setIsEditorial(boolean isEditorial) {
         this.mIsEditorial = isEditorial;
@@ -150,8 +144,12 @@ public class ShutterStockImage implements ShutterStockMedia, Comparable {
 
     @Override
     public int compareTo(Object another) {
-        ShutterStockImage anotherImage = (ShutterStockImage)another;
+        ShutterStockImage anotherImage = (ShutterStockImage) another;
         return this.mId.compareTo(anotherImage.mId);
+    }
+
+    public enum ImageType {
+        PHOTO, VECTOR
     }
 
 }

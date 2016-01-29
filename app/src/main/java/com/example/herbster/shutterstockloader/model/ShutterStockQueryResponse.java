@@ -31,20 +31,20 @@ public class ShutterStockQueryResponse {
         return mId;
     }
 
-    public int getNumElements() {
-        return mNumElements;
-    }
-
-    public int getNumAddedElements() {
-        return mImagesSet.size();
-    }
-
     public void setId(String id) {
         this.mId = id;
     }
 
+    public int getNumElements() {
+        return mNumElements;
+    }
+
     public void setNumElements(int numElements) {
         this.mNumElements = numElements;
+    }
+
+    public int getNumAddedElements() {
+        return mImagesSet.size();
     }
 
     @Override

@@ -33,7 +33,7 @@ public class ShutterStockCategory implements Comparable {
 
     @Override
     public int compareTo(Object another) {
-        ShutterStockCategory anotherCat = (ShutterStockCategory)another;
+        ShutterStockCategory anotherCat = (ShutterStockCategory) another;
         return this.mId.compareTo(anotherCat.mId);
     }
 }

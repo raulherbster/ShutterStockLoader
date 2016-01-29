@@ -4,13 +4,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.util.Pair;
 
 import com.example.herbster.shutterstockloader.ShutterStockImageListener;
-import com.example.herbster.shutterstockloader.ShutterStockQueryListener;
 import com.example.herbster.shutterstockloader.model.ShutterStockImageAsset;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,16 +31,6 @@ public class DownloadImageWorker extends AsyncTask<ShutterStockImageAsset, Void,
         mImageListenersList = new ArrayList<ShutterStockImageListener>();
     }
 
-    public boolean addImageListener(ShutterStockImageListener l) {
-        if (!mImageListenersList.contains(l))
-            return mImageListenersList.add(l);
-        return false;
-    }
-
-    public boolean removeImageListener(ShutterStockImageListener l) {
-        return mImageListenersList.remove(l);
-    }
-
     public static int calculateInSampleSize(
             BitmapFactory.Options options, int reqWidth, int reqHeight) {
         // Raw height and width of image
@@ -65,6 +52,16 @@ public class DownloadImageWorker extends AsyncTask<ShutterStockImageAsset, Void,
         }
 
         return inSampleSize;
+    }
+
+    public boolean addImageListener(ShutterStockImageListener l) {
+        if (!mImageListenersList.contains(l))
+            return mImageListenersList.add(l);
+        return false;
+    }
+
+    public boolean removeImageListener(ShutterStockImageListener l) {
+        return mImageListenersList.remove(l);
     }
 
     public Bitmap decodeSampledBitmapFromStream(InputStream in_a, InputStream in_b, int reqWidth, int reqHeight) throws IOException {
@@ -99,7 +96,7 @@ public class DownloadImageWorker extends AsyncTask<ShutterStockImageAsset, Void,
             in_b = new ByteArrayInputStream(byteArrayStream.toByteArray());
             bitmap = decodeSampledBitmapFromStream(in_a, in_b, imageAsset.getWidth(), imageAsset.getHeight());
         } catch (IOException e) {
-            Log.e(TAG,"Could not load bitmap");
+            Log.e(TAG, "Could not load bitmap");
             bitmap = null;
         }
 
@@ -125,8 +122,8 @@ public class DownloadImageWorker extends AsyncTask<ShutterStockImageAsset, Void,
             mCurrentConnection.setUseCaches(true);
             mCurrentConnection.connect();
             return mCurrentConnection.getInputStream();
-        } catch(IOException ioe) {
-            Log.e(TAG,"Could not load the image URL : " + url);
+        } catch (IOException ioe) {
+            Log.e(TAG, "Could not load the image URL : " + url);
             return null;
         }
     }
@@ -136,7 +133,7 @@ public class DownloadImageWorker extends AsyncTask<ShutterStockImageAsset, Void,
 
         byte[] buffer = new byte[1024];
         int len;
-        while ((len = input.read(buffer)) > -1 ) {
+        while ((len = input.read(buffer)) > -1) {
             baos.write(buffer, 0, len);
         }
         baos.flush();

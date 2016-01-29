@@ -19,18 +19,18 @@ import java.util.List;
 
 public class ShutterStockItemAdapter extends ArrayAdapter<Bitmap> {
 
-    Context context;
-    LayoutInflater inflater;
-    int layoutResourceId;
-    float imageWidth;
+    private Context context;
+    private LayoutInflater inflater;
+    private int layoutResourceId;
+    private float imageWidth;
 
     public ShutterStockItemAdapter(Context context, int layoutResourceId, List<Bitmap> items) {
         super(context, layoutResourceId, items);
         this.context = context;
         this.layoutResourceId = layoutResourceId;
 
-        float width = ((Activity)context).getWindowManager().getDefaultDisplay().getWidth();
-        float margin = (int)convertDpToPixel(10f, (Activity)context);
+        float width = ((Activity) context).getWindowManager().getDefaultDisplay().getWidth();
+        float margin = (int) convertDpToPixel(10f, (Activity) context);
         // two images, three margins of 10dips
         imageWidth = ((width - (3 * margin)) / 2);
     }
@@ -45,7 +45,7 @@ public class ShutterStockItemAdapter extends ArrayAdapter<Bitmap> {
             holder = new ItemHolder();
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             row = (FrameLayout) inflater.inflate(layoutResourceId, parent, false);
-            ImageView itemImage = (ImageView)row.findViewById(R.id.item_image);
+            ImageView itemImage = (ImageView) row.findViewById(R.id.item_image);
             holder.itemImage = itemImage;
         } else {
             holder = (ItemHolder) row.getTag();
@@ -56,13 +56,10 @@ public class ShutterStockItemAdapter extends ArrayAdapter<Bitmap> {
         return row;
     }
 
-    public static class ItemHolder
-    {
-        ImageView itemImage;
-    }
-
-    // resize the image proportionately so it fits the entire space
-    private void setImageBitmap(Bitmap itemBitmap, ImageView imageView){
+    /**
+     * Resizes the image proportionately so it fits the entire space
+     */
+    private void setImageBitmap(Bitmap itemBitmap, ImageView imageView) {
         float i = ((float) imageWidth) / ((float) itemBitmap.getWidth());
         float imageHeight = i * (itemBitmap.getHeight());
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) imageView.getLayoutParams();
@@ -72,11 +69,21 @@ public class ShutterStockItemAdapter extends ArrayAdapter<Bitmap> {
         imageView.setImageBitmap(itemBitmap);
     }
 
-    public float convertDpToPixel(float dp, Context context){
+    /**
+     * Converts dp into pixel values.
+     * @param dp
+     * @param context
+     * @return
+     */
+    public float convertDpToPixel(float dp, Context context) {
         Resources resources = context.getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
-        float px = dp * (metrics.densityDpi/160f);
+        float px = dp * (metrics.densityDpi / 160f);
         return px;
+    }
+
+    class ItemHolder {
+        ImageView itemImage;
     }
 
 }

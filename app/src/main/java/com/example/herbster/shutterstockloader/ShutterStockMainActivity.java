@@ -1,5 +1,6 @@
 package com.example.herbster.shutterstockloader;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
@@ -29,17 +30,85 @@ import java.util.Set;
 
 public class ShutterStockMainActivity extends ActionBarActivity implements SearchView.OnQueryTextListener, ShutterStockQueryListener, ShutterStockImageListener {
 
-    private ListView listViewLeft;
-    private ListView listViewRight;
-
-    private ShutterStockItemAdapter leftAdapter;
-    private ShutterStockItemAdapter rightAdapter;
-
+    public static final String PREVIEW_ASSET = "preview";
     List<Integer> leftViewsHeights;
     List<Integer> rightViewsHeights;
+    private ListView listViewLeft;
+    private ListView listViewRight;
+    // Passing the touch event to the opposite list
+    View.OnTouchListener touchListener = new View.OnTouchListener() {
+        boolean dispatched = false;
 
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            if (v.equals(listViewLeft) && !dispatched) {
+                dispatched = true;
+                listViewRight.dispatchTouchEvent(event);
+            } else if (v.equals(listViewRight) && !dispatched) {
+                dispatched = true;
+                listViewLeft.dispatchTouchEvent(event);
+            }
+
+            dispatched = false;
+            return false;
+        }
+    };
+    /**
+     * Synchronizing scrolling
+     * Distance from the top of the first visible element opposite list:
+     * sum_heights(opposite invisible screens) - sum_heights(invisible screens) + distance from top of the first visible child
+     */
+    AbsListView.OnScrollListener scrollListener = new AbsListView.OnScrollListener() {
+
+        @Override
+        public void onScrollStateChanged(AbsListView v, int scrollState) {
+        }
+
+        @Override
+        public void onScroll(AbsListView view, int firstVisibleItem,
+                             int visibleItemCount, int totalItemCount) {
+
+            if (view.getChildAt(0) != null) {
+                int firstVisiblePosition = view.getFirstVisiblePosition();
+                if (view.equals(listViewLeft) && (leftViewsHeights.size() > firstVisiblePosition)) {
+                    leftViewsHeights.set(firstVisiblePosition, view.getChildAt(0).getHeight());
+
+                    int h = 0;
+                    for (int i = 0; i < listViewRight.getFirstVisiblePosition(); i++) {
+                        h += rightViewsHeights.get(i);
+                    }
+
+                    int hi = 0;
+                    for (int i = 0; i < listViewLeft.getFirstVisiblePosition(); i++) {
+                        hi += leftViewsHeights.get(i);
+                    }
+
+                    int top = h - hi + view.getChildAt(0).getTop();
+                    listViewRight.setSelectionFromTop(listViewRight.getFirstVisiblePosition(), top);
+                } else if (view.equals(listViewRight) && (rightViewsHeights.size() > firstVisiblePosition)) {
+                    rightViewsHeights.set(firstVisiblePosition, view.getChildAt(0).getHeight());
+
+                    int h = 0;
+                    for (int i = 0; i < listViewLeft.getFirstVisiblePosition(); i++) {
+                        h += leftViewsHeights.get(i);
+                    }
+
+                    int hi = 0;
+                    for (int i = 0; i < listViewRight.getFirstVisiblePosition(); i++) {
+                        hi += rightViewsHeights.get(i);
+                    }
+
+                    int top = h - hi + view.getChildAt(0).getTop();
+                    listViewLeft.setSelectionFromTop(listViewLeft.getFirstVisiblePosition(), top);
+                }
+
+            }
+
+        }
+    };
+    private ShutterStockItemAdapter leftAdapter;
+    private ShutterStockItemAdapter rightAdapter;
     private boolean onLeftSide = true;
-
     private ShutterStockAppProperties mProperties;
 
     @Override
@@ -105,7 +174,25 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
     private void performQuery(String query) {
         leftAdapter.clear();
         rightAdapter.clear();
-        PerformQueryTask queryTask = new PerformQueryTask();
+        PerformQueryTask queryTask = new PerformQueryTask() {
+            private ProgressDialog dialog;
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+                dialog = new ProgressDialog(ShutterStockMainActivity.this);
+                this.dialog.setMessage("Retrieving images...");
+                this.dialog.show();
+            }
+
+            @Override
+            protected void onPostExecute(ShutterStockQueryResponse shutterStockQueryResponse) {
+                if (dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+                super.onPostExecute(shutterStockQueryResponse);
+            }
+        };
         queryTask.addQueryListener(this);
         queryTask.execute(query);
     }
@@ -127,7 +214,7 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
     public void onQueryFinished(ShutterStockQueryResponse response) {
         Set<ShutterStockImage> images = response.getImages();
         for (ShutterStockImage image : images) {
-            ShutterStockImageAsset asset = image.getAsset("preview");
+            ShutterStockImageAsset asset = image.getAsset(PREVIEW_ASSET);
             DownloadImageWorker downloadImageWorker = new DownloadImageWorker();
             downloadImageWorker.addImageListener(this);
             downloadImageWorker.execute(asset);
@@ -160,77 +247,4 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
         leftViewsHeights = new ArrayList<Integer>();
         rightViewsHeights = new ArrayList<Integer>();
     }
-
-    // Passing the touch event to the opposite list
-    View.OnTouchListener touchListener = new View.OnTouchListener() {
-        boolean dispatched = false;
-
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            if (v.equals(listViewLeft) && !dispatched) {
-                dispatched = true;
-                listViewRight.dispatchTouchEvent(event);
-            } else if (v.equals(listViewRight) && !dispatched) {
-                dispatched = true;
-                listViewLeft.dispatchTouchEvent(event);
-            }
-
-            dispatched = false;
-            return false;
-        }
-    };
-
-    /**
-     * Synchronizing scrolling
-     * Distance from the top of the first visible element opposite list:
-     * sum_heights(opposite invisible screens) - sum_heights(invisible screens) + distance from top of the first visible child
-     */
-    AbsListView.OnScrollListener scrollListener = new AbsListView.OnScrollListener() {
-
-        @Override
-        public void onScrollStateChanged(AbsListView v, int scrollState) {
-        }
-
-        @Override
-        public void onScroll(AbsListView view, int firstVisibleItem,
-                             int visibleItemCount, int totalItemCount) {
-
-            if (view.getChildAt(0) != null) {
-                int firstVisiblePosition = view.getFirstVisiblePosition();
-                if (view.equals(listViewLeft) && (leftViewsHeights.size() > firstVisiblePosition)){
-                    leftViewsHeights.set(firstVisiblePosition,view.getChildAt(0).getHeight());
-
-                    int h = 0;
-                    for (int i = 0; i < listViewRight.getFirstVisiblePosition(); i++) {
-                        h += rightViewsHeights.get(i);
-                    }
-
-                    int hi = 0;
-                    for (int i = 0; i < listViewLeft.getFirstVisiblePosition(); i++) {
-                        hi += leftViewsHeights.get(i);
-                    }
-
-                    int top = h - hi + view.getChildAt(0).getTop();
-                    listViewRight.setSelectionFromTop(listViewRight.getFirstVisiblePosition(), top);
-                } else if (view.equals(listViewRight) && (rightViewsHeights.size() > firstVisiblePosition)) {
-                    rightViewsHeights.set(firstVisiblePosition,view.getChildAt(0).getHeight());
-
-                    int h = 0;
-                    for (int i = 0; i < listViewLeft.getFirstVisiblePosition(); i++) {
-                        h += leftViewsHeights.get(i);
-                    }
-
-                    int hi = 0;
-                    for (int i = 0; i < listViewRight.getFirstVisiblePosition(); i++) {
-                        hi += rightViewsHeights.get(i);
-                    }
-
-                    int top = h - hi + view.getChildAt(0).getTop();
-                    listViewLeft.setSelectionFromTop(listViewLeft.getFirstVisiblePosition(), top);
-                }
-
-            }
-
-        }
-    };
 }

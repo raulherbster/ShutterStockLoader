@@ -18,10 +18,9 @@ public class ShutterStockAppProperties {
     public static final String PROP_AUTHORITY = "image_query_authority";
     public static final String PROP_PATHS = "image_query_paths";
     public static final String PROP_NUM_IMAGES_PER_PAGE = "num_images_per_page";
+    private static ShutterStockAppProperties singleton = null;
     private final String TAG = "ShutterStockProp";
     private final String PROPERTIES_FILE = "app.properties";
-
-    private static ShutterStockAppProperties singleton = null;
     private Context mContext;
 
     private Properties mProperties;
@@ -35,11 +34,6 @@ public class ShutterStockAppProperties {
         }
     }
 
-    private void loadProperties() throws IOException {
-        mProperties = new Properties();
-        mProperties.load(mContext.getAssets().open(PROPERTIES_FILE));
-    }
-
     public static synchronized ShutterStockAppProperties from(Context context) {
         if (singleton == null)
             singleton = new ShutterStockAppProperties(context);
@@ -48,6 +42,11 @@ public class ShutterStockAppProperties {
 
     public static synchronized ShutterStockAppProperties getInstance() {
         return singleton;
+    }
+
+    private void loadProperties() throws IOException {
+        mProperties = new Properties();
+        mProperties.load(mContext.getAssets().open(PROPERTIES_FILE));
     }
 
     public String getEncodedCredentials() {

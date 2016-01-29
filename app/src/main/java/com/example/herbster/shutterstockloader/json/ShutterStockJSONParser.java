@@ -21,6 +21,11 @@ import java.util.Date;
 import java.util.List;
 
 /**
+ * This class defines a JSON parser for the format provided by StutterStock.
+ *
+ * To parser the successful query for images, the method parseShutterStockJSONResponse should
+ * be used.
+ *
  * Created by herbster on 1/27/2016.
  */
 public class ShutterStockJSONParser {
@@ -60,16 +65,30 @@ public class ShutterStockJSONParser {
 
     private static ShutterStockJSONParser singleton = null;
 
+    /**
+     * Private constructor.
+     */
     private ShutterStockJSONParser() {
 
     }
 
+    /**
+     * Return the instance of this
+     * @return the singleton instance of this JSON parser
+     */
     public synchronized static ShutterStockJSONParser getInstance() {
         if (singleton == null)
             singleton = new ShutterStockJSONParser();
         return singleton;
     }
 
+    /**
+     * Parses the response (successful) into a meaningful ShutterStock object. In this case,
+     * a ShutterStockQueryResponse with the content structured as objects.
+     * @param in the input stream from the service response.
+     * @return a ShutterStockQueryResponse object with the content structured as objects; null, if
+     * the input stream is null or if there's a parser error.
+     */
     public ShutterStockQueryResponse parseShutterStockJSONResponse(InputStream in) {
         if (in == null)
             return null;
@@ -101,21 +120,6 @@ public class ShutterStockJSONParser {
             return null;
         }
         return response;
-    }
-
-    private String convertStreamToString(InputStream in) {
-        BufferedReader r = new BufferedReader(new InputStreamReader(in));
-        StringBuilder total = new StringBuilder();
-        String line;
-        try {
-            while ((line = r.readLine()) != null) {
-                total.append(line);
-            }
-        } catch (IOException e) {
-            Log.e(TAG,"Cannot retrieve the content of the input stream.");
-            return "";
-        }
-        return total.toString();
     }
 
     private List<ShutterStockImage> parseShutterStockImages(JsonReader jsonReader) throws IOException {
@@ -301,6 +305,12 @@ public class ShutterStockJSONParser {
         return contributor;
     }
 
+    /**
+     * Creates a Date from a string considering a certain format.
+     * @param dateString the date as a string.
+     * @param formatString the string containing the format to be used.
+     * @return the date from the given string.
+     */
     private Date dateFromString(String dateString, String formatString) {
         if (dateString == null)
             return null;
@@ -312,5 +322,25 @@ public class ShutterStockJSONParser {
             Log.e(TAG,"Could not parse date");
             return null;
         }
+    }
+
+    /**
+     * Utility method. Reads the content of a input stream and return it as a String.
+     * @param in the input stream to be read.
+     * @return the String with the content of the input stream.
+     */
+    private String convertStreamToString(InputStream in) {
+        BufferedReader r = new BufferedReader(new InputStreamReader(in));
+        StringBuilder total = new StringBuilder();
+        String line;
+        try {
+            while ((line = r.readLine()) != null) {
+                total.append(line);
+            }
+        } catch (IOException e) {
+            Log.e(TAG,"Cannot retrieve the content of the input stream.");
+            return "";
+        }
+        return total.toString();
     }
 }
