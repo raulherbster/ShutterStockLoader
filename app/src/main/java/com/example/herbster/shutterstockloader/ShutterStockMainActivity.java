@@ -269,7 +269,7 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
 
     }
 
-    private void preloadItems() {
+    private void preloadItems() { 
         List<Bitmap> leftItems = new ArrayList<Bitmap>();
         List<Bitmap> rightItems = new ArrayList<Bitmap>();
 
