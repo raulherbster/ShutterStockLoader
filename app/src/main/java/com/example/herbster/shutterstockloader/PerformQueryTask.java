@@ -22,6 +22,7 @@ public class PerformQueryTask extends AsyncTask<String, Void, ShutterStockQueryR
     public static final String PARAM_PER_PAGE = "per_page";
     public static final String PARAM_QUERY = "query";
     public static final String PARAM_VIEW = "view";
+    public static final int INVALID_NUM_PAGE = 0;
     private List<ShutterStockQueryListener> mQueryListenersList;
 
     public PerformQueryTask() {
@@ -56,7 +57,7 @@ public class PerformQueryTask extends AsyncTask<String, Void, ShutterStockQueryR
             ServiceRequest request = new ServiceRequest();
             request.setAuthBasic(properties.getEncodedCredentials());
 
-            request.addParameter(PARAM_PAGE, Integer.toString(1));
+            request.addParameter(PARAM_PAGE, params[1]);
             request.addParameter(PARAM_PER_PAGE, Integer.toString(properties.getNumImagesPerPage()));
             request.addParameter(PARAM_QUERY, params[0]);
             request.addParameter(PARAM_VIEW, "full");
@@ -65,13 +66,13 @@ public class PerformQueryTask extends AsyncTask<String, Void, ShutterStockQueryR
 
             if (response != null && !response.isError()) {
                 InputStream stream = new ByteArrayInputStream(response.getContent().getBytes());
-                ShutterStockQueryResponse queryResponse = ShutterStockJSONParser.getInstance().parseShutterStockJSONResponse(stream);
-                return queryResponse;
+                return ShutterStockJSONParser.getInstance().parseShutterStockJSONResponse(stream);
             }
 
         }
         return null;
     }
+
 
     @Override
     protected void onPostExecute(ShutterStockQueryResponse shutterStockQueryResponse) {
@@ -82,5 +83,6 @@ public class PerformQueryTask extends AsyncTask<String, Void, ShutterStockQueryR
             for (ShutterStockQueryListener listener : mQueryListenersList)
                 listener.onQueryFinished(shutterStockQueryResponse);
         }
+
     }
 }

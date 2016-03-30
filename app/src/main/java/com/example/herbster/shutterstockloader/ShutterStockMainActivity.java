@@ -36,6 +36,27 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
     private ListView listViewLeft;
     private ListView listViewRight;
     // Passing the touch event to the opposite list
+
+    private class InnerPerformQueryTask extends PerformQueryTask {
+        private ProgressDialog dialog;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            dialog = new ProgressDialog(ShutterStockMainActivity.this);
+            this.dialog.setMessage("Retrieving images...");
+            this.dialog.show();
+        }
+
+        @Override
+        protected void onPostExecute(ShutterStockQueryResponse shutterStockQueryResponse) {
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
+            super.onPostExecute(shutterStockQueryResponse);
+        }
+    }
+
     View.OnTouchListener touchListener = new View.OnTouchListener() {
         boolean dispatched = false;
 
@@ -60,8 +81,25 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
      */
     AbsListView.OnScrollListener scrollListener = new AbsListView.OnScrollListener() {
 
-        @Override
-        public void onScrollStateChanged(AbsListView v, int scrollState) {
+        private int mCurrentFirstVisibleItem;
+        private int mCurrentVisibleItemCount;
+        private int mCurrentTotalItemCount;
+        private int mCurrentScrollState;
+
+        public void onScrollStateChanged(AbsListView view, int scrollState) {
+            mCurrentScrollState = scrollState;
+            isScrollCompleted();
+        }
+
+        private void isScrollCompleted() {
+            if (mCurrentVisibleItemCount > 0 && mCurrentScrollState == SCROLL_STATE_IDLE) {
+                if(mCurrentFirstVisibleItem + mCurrentVisibleItemCount == mCurrentTotalItemCount && mCurrentTotalItemCount != 0) {
+                    PerformQueryTask queryTask = new InnerPerformQueryTask();
+                    queryTask.addQueryListener(ShutterStockMainActivity.this);
+                    if (mCurrentPage > 0)
+                        queryTask.execute(new String[] { mCurrentQuery,Integer.toString(mCurrentPage) });
+                }
+            }
         }
 
         @Override
@@ -102,6 +140,9 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
                     listViewLeft.setSelectionFromTop(listViewLeft.getFirstVisiblePosition(), top);
                 }
 
+                mCurrentFirstVisibleItem = firstVisibleItem;
+                mCurrentVisibleItemCount = visibleItemCount;
+                mCurrentTotalItemCount = totalItemCount;
             }
 
         }
@@ -171,30 +212,18 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
         return false;
     }
 
+
+    private String mCurrentQuery;
+    private int mCurrentPage = 1;
+    private int mTotalItemsDownloaded = 0;
+
     private void performQuery(String query) {
         leftAdapter.clear();
         rightAdapter.clear();
-        PerformQueryTask queryTask = new PerformQueryTask() {
-            private ProgressDialog dialog;
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                dialog = new ProgressDialog(ShutterStockMainActivity.this);
-                this.dialog.setMessage("Retrieving images...");
-                this.dialog.show();
-            }
-
-            @Override
-            protected void onPostExecute(ShutterStockQueryResponse shutterStockQueryResponse) {
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
-                }
-                super.onPostExecute(shutterStockQueryResponse);
-            }
-        };
+        PerformQueryTask queryTask = new InnerPerformQueryTask();
         queryTask.addQueryListener(this);
-        queryTask.execute(query);
+        mCurrentQuery = query;
+        queryTask.execute( new String[] { mCurrentQuery,Integer.toString(mCurrentPage) } );
     }
 
     private void popupNetworkErrorMessage() {
@@ -212,6 +241,11 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
 
     @Override
     public void onQueryFinished(ShutterStockQueryResponse response) {
+        mTotalItemsDownloaded += response.getNumAddedElements();
+        if (mTotalItemsDownloaded < response.getNumElements())
+            mCurrentPage++;
+        else
+            mCurrentPage = 0;
         Set<ShutterStockImage> images = response.getImages();
         for (ShutterStockImage image : images) {
             ShutterStockImageAsset asset = image.getAsset(PREVIEW_ASSET);

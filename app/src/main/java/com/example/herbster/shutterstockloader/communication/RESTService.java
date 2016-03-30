@@ -40,6 +40,8 @@ public class RESTService {
     /**
      */
     public static RESTService create(String scheme, String authority, String[] paths) {
+        if (scheme == null || authority == null)
+            return null;
         return new RESTService(scheme,authority,paths);
     }
 
