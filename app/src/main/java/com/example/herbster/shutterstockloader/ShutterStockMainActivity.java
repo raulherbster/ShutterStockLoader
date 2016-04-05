@@ -35,6 +35,9 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
     List<Integer> rightViewsHeights;
     private ListView listViewLeft;
     private ListView listViewRight;
+    private boolean mLoading;
+    private int mNumImagesLoading;
+
     // Passing the touch event to the opposite list
 
     private class InnerPerformQueryTask extends PerformQueryTask {
@@ -92,12 +95,14 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
         }
 
         private void isScrollCompleted() {
-            if (mCurrentVisibleItemCount > 0 && mCurrentScrollState == SCROLL_STATE_IDLE) {
+            if (mCurrentVisibleItemCount > 0 && mCurrentScrollState == SCROLL_STATE_IDLE && !mLoading) {
                 if(mCurrentFirstVisibleItem + mCurrentVisibleItemCount == mCurrentTotalItemCount && mCurrentTotalItemCount != 0) {
                     PerformQueryTask queryTask = new InnerPerformQueryTask();
                     queryTask.addQueryListener(ShutterStockMainActivity.this);
-                    if (mCurrentPage > 0)
-                        queryTask.execute(new String[] { mCurrentQuery,Integer.toString(mCurrentPage) });
+                    if (mCurrentPage > 0) {
+                        mLoading = true;
+                        queryTask.execute(new String[]{mCurrentQuery, Integer.toString(mCurrentPage)});
+                    }
                 }
             }
         }
@@ -156,6 +161,8 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shutter_stock_main);
+
+        mLoading = false;
 
         mProperties = ShutterStockAppProperties.from(getApplicationContext());
 
@@ -223,6 +230,8 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
         PerformQueryTask queryTask = new InnerPerformQueryTask();
         queryTask.addQueryListener(this);
         mCurrentQuery = query;
+        mLoading = true;
+        mNumImagesLoading = 0;
         queryTask.execute( new String[] { mCurrentQuery,Integer.toString(mCurrentPage) } );
     }
 
@@ -246,6 +255,7 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
             mCurrentPage++;
         else
             mCurrentPage = 0;
+        mNumImagesLoading = response.getNumAddedElements();
         Set<ShutterStockImage> images = response.getImages();
         for (ShutterStockImage image : images) {
             ShutterStockImageAsset asset = image.getAsset(PREVIEW_ASSET);
@@ -262,6 +272,9 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
             rightAdapter.add(bitmap);
         }
         onLeftSide = !onLeftSide;
+        mNumImagesLoading--;
+        if (mNumImagesLoading == 0)
+            mLoading = false;
     }
 
     @Override
@@ -269,7 +282,7 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
 
     }
 
-    private void preloadItems() { 
+    private void preloadItems() {
         List<Bitmap> leftItems = new ArrayList<Bitmap>();
         List<Bitmap> rightItems = new ArrayList<Bitmap>();
 
