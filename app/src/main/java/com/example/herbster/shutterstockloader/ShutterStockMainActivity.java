@@ -9,12 +9,14 @@ import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.ListView;
 
@@ -28,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class ShutterStockMainActivity extends ActionBarActivity implements SearchView.OnQueryTextListener, ShutterStockQueryListener, ShutterStockImageListener {
+public class ShutterStockMainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, ShutterStockQueryListener, ShutterStockImageListener {
 
     public static final String PREVIEW_ASSET = "preview";
     List<Integer> leftViewsHeights;
@@ -156,6 +158,7 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
     private ShutterStockItemAdapter rightAdapter;
     private boolean onLeftSide = true;
     private ShutterStockAppProperties mProperties;
+    private SearchView mSearchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -186,9 +189,9 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
         MenuItem searchItem = menu.findItem(R.id.search);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
-        if (searchView != null) {
-            searchView.setOnQueryTextListener(this);
+        mSearchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        if (mSearchView != null) {
+            mSearchView.setOnQueryTextListener(this);
         }
 
         return super.onCreateOptionsMenu(menu);
@@ -224,9 +227,14 @@ public class ShutterStockMainActivity extends ActionBarActivity implements Searc
     private int mCurrentPage = 1;
     private int mTotalItemsDownloaded = 0;
 
+    private void hideKeyboard() {
+        mSearchView.clearFocus();
+    }
+
     private void performQuery(String query) {
         leftAdapter.clear();
         rightAdapter.clear();
+        hideKeyboard();
         PerformQueryTask queryTask = new InnerPerformQueryTask();
         queryTask.addQueryListener(this);
         mCurrentQuery = query;
